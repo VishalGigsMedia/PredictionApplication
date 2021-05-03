@@ -27,7 +27,7 @@ class TermsConditionFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        callback?.onSetToolbarTitle(true, TermsConditionFragment::class.java.simpleName)
+        callback?.onSetToolbarTitle(true, TermsConditionFragment::class.java.simpleName, "")
 
 
     }

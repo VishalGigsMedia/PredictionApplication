@@ -29,6 +29,7 @@ import com.prediction_hub.retrofit.APIService
 import com.prediction_hub.ui.about_us.AboutUsFragment
 import com.prediction_hub.ui.home.HomeFragment
 import com.prediction_hub.ui.home.MatchDetailFragment
+import com.prediction_hub.ui.home.MatchDetailsParent
 import com.prediction_hub.ui.privacy_policy.PrivacyPolicyFragment
 import com.prediction_hub.ui.terms_condition.TermsConditionFragment
 import com.project.prediction_hub.R
@@ -123,7 +124,7 @@ class MainActivity : AppCompatActivity(), OnCurrentFragmentVisibleListener {
     private fun showMatchDetails(matchId: String, matchType: String) {
         //println("matchId : $matchId  matchType : $matchType")
         openFragment(this, HomeFragment(), false)
-        val matchDetailFragment = MatchDetailFragment()
+        val matchDetailFragment = MatchDetailFragment(matchId, matchType)
         val bundle = Bundle()
         bundle.putString(BundleKey.MatchId.toString(), matchId)
         bundle.putString(BundleKey.MatchType.toString(), matchType)
@@ -187,13 +188,18 @@ class MainActivity : AppCompatActivity(), OnCurrentFragmentVisibleListener {
         if (fragment is AboutUsFragment) fragment.setOnCurrentFragmentVisibleListener(this)
         if (fragment is PrivacyPolicyFragment) fragment.setOnCurrentFragmentVisibleListener(this)
         if (fragment is TermsConditionFragment) fragment.setOnCurrentFragmentVisibleListener(this)
+        if (fragment is MatchDetailsParent) fragment.setOnCurrentFragmentVisibleListener(this)
+
 
     }
 
-    override fun onSetToolbarTitle(show: Boolean, currentFragmentName: String) {
+    override fun onSetToolbarTitle(show: Boolean, currentFragmentName: String, toolbarTitle: String) {
         when (currentFragmentName) {
             HomeFragment::class.java.simpleName -> {
                 setToolbarName(getString(R.string.menu_home))
+            }
+            MatchDetailsParent::class.java.simpleName -> {
+                setToolbarName(toolbarTitle)
             }
             MatchDetailFragment::class.java.simpleName -> {
                 setToolbarName(getString(R.string.match_details))

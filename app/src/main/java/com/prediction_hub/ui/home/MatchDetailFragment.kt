@@ -8,14 +8,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.Gson
 import com.prediction_hub.MainActivity
 import com.prediction_hub.common_helper.Application
-import com.prediction_hub.common_helper.BundleKey
 import com.prediction_hub.common_helper.ConstantHelper
 import com.prediction_hub.common_helper.DefaultHelper.decrypt
 import com.prediction_hub.common_helper.DefaultHelper.forceLogout
 import com.prediction_hub.common_helper.DefaultHelper.showToast
 import com.prediction_hub.common_helper.OnCurrentFragmentVisibleListener
+import com.prediction_hub.common_helper.PreferenceHelper
 import com.prediction_hub.retrofit.APIService
 import com.prediction_hub.ui.home.adapter.MatchDetailsAdapter
 import com.prediction_hub.ui.home.model.MatchDetailsModel
@@ -23,7 +24,8 @@ import com.prediction_hub.ui.home.view_model.MatchListViewModel
 import com.project.prediction_hub.databinding.FragmentMatchDetailsBinding
 import javax.inject.Inject
 
-class MatchDetailFragment : Fragment() {
+
+class MatchDetailFragment(private val matchId: String, val matchType: String) : Fragment() {
     @Inject
     lateinit var apiService: APIService
 
@@ -49,20 +51,12 @@ class MatchDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         init()
-
     }
 
     private fun init() {
-        callback?.onSetToolbarTitle(true, MatchDetailFragment::class.java.simpleName)
+        // callback?.onSetToolbarTitle(true, MatchDetailFragment::class.java.simpleName,"")
         setAdapter()
-
-        val bundle = arguments
-        if (bundle != null) {
-            val matchId = bundle.getString(BundleKey.MatchId.toString()).toString()
-            val matchType = bundle.getString(BundleKey.MatchType.toString()).toString()
-
-            getMatchDetails(matchId, matchType)
-        }
+        getMatchDetails(matchId, matchType)
     }
 
     fun setOnCurrentFragmentVisibleListener(activity: MainActivity) {
@@ -93,11 +87,15 @@ class MatchDetailFragment : Fragment() {
                 when (matchDetailsModel.status) {
                     ConstantHelper.success -> {
                         setMatchDetails(matchDetailsModel.data?.match_details)
+
                         if (matchDetailsModel.data?.prediction?.isNotEmpty() == true) {
                             mBinding?.rvMatchDetails?.visibility = View.VISIBLE
                             this.list = matchDetailsModel.data.prediction as ArrayList<MatchDetailsModel.Data.Prediction>
                             adapter?.addData(list)
                         }
+
+                        //teamDetails(matchDetailsModel.data?.fantasy_teams!!)
+
                     }
                     ConstantHelper.failed -> {
                         setNoDataLayout(decrypt(matchDetailsModel.message.toString()))
@@ -123,6 +121,7 @@ class MatchDetailFragment : Fragment() {
         }
     }
 
+    // private fun setMatchDetails(matchDetails: MatchDetailsModel1.Data.MatchDetails?) {
     private fun setMatchDetails(matchDetails: MatchDetailsModel.Data.MatchDetails?) {
         if (matchDetails != null) {
             mBinding?.clMatchDetail?.visibility = View.VISIBLE
@@ -144,8 +143,19 @@ class MatchDetailFragment : Fragment() {
                 mBinding?.tvDateValue?.text = date
                 mBinding?.tvTimeValue?.text = time
             }
+
+
         }
     }
 
+    private fun teamDetails(teamDetails: MatchDetailsModel.Data.FantasyTeams) {
+        val gson = Gson()
+        val jsonTeamFirst = gson.toJson(teamDetails.team1)
+        val jsonTeamSecond = gson.toJson(teamDetails.team2)
+        val preferenceHelper = PreferenceHelper(requireContext())
+        preferenceHelper.setKey("team1", jsonTeamFirst)
+        preferenceHelper.setKey("team2", jsonTeamSecond)
+        println("jsonTeamFirst : $jsonTeamFirst")
 
+    }
 }
